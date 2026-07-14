@@ -17,6 +17,12 @@ const ENV_VARS: EnvSpec[] = [
   { key: 'NODE_ENV', required: true },
   { key: 'LOG_LEVEL', required: true },
   { key: 'DATABASE_NAME', required: true },
+  { key: 'SESSION_SECRET', required: true },
+  { key: 'SESSION_MAX_AGE', required: true },
+  { key: 'MEMCACHIER_SERVERS', required: true },
+  { key: 'MEMCACHIER_USERNAME', required: true },
+  { key: 'MEMCACHIER_PASSWORD', required: true },
+  { key: 'BREVO_API_KEY', required: true },
 ]
 
 interface Env {

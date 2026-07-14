@@ -3,6 +3,20 @@ import cors from 'cors'
 import { connectDB, gracefulShutDown } from './config/database.js'
 import { env } from './config/keys.js'
 import logger, { logError } from './config/logger.js'
+import createSessionMiddleware from './config/session.js'
+import { globalLimiter } from './middlewares/rateLimit.middleware.js'
+import emailRoutes from "../src/routes/email.routes.js"
+
+import {
+  appErrorHandler,
+  createExpressLogger,
+  notFoundRoutes,
+  setupGlobalErrorHandlers,
+} from './middlewares/error.middleware.js'
+
+
+
+
 
 declare global {
   namespace Express {
@@ -13,7 +27,20 @@ declare global {
   }
 }
 
+// just added this to avoid the error "Cannot redeclare block-scoped variable 'Request'." in TypeScript
+
+// Extend express-session SessionData interface
+declare module 'express-session' {
+  interface SessionData {
+    userId?: string
+    role?: 'attendee' | 'organizer' | 'admin'
+  }
+}
+
 const app = express()
+app.use('/api', emailRoutes)
+
+setupGlobalErrorHandlers()
 
 // CORS configuration
 const allowedOrigins = [env.CLIENT_URL]
@@ -36,8 +63,14 @@ const corsOptions: cors.CorsOptions = {
   exposedHeaders: ['Content-Range', 'X-Content-Range', 'x-refresh-token', 'set-cookie'],
 }
 
+app.use(createExpressLogger())//pino http logger middleware for request logging
+// Use session middleware before defining routes
+app.use(createSessionMiddleware())
+
 app.set('trust-proxy', 1)
 app.use(cors(corsOptions))
+app.use(globalLimiter) // Apply rate limiting to all requests
+app.use(createSessionMiddleware())
 app.use(express.json({ limit: '25mb' }))
 app.use(express.urlencoded({ extended: true, limit: '25mb' }))
 app.disable('x-powered-by')
@@ -56,6 +89,20 @@ app.use('/health', (req: Request, res: Response, next: NextFunction) => {
     uptime: process.uptime(),
   })
 })
+
+
+
+
+
+// Handle 404
+app.use(notFoundRoutes)
+// Global error handler
+app.use(appErrorHandler)
+
+
+
+
+
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000
 const startServer = async (): Promise<void> => {
   let server: any
