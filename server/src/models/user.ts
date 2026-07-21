@@ -8,6 +8,8 @@ export interface IUser extends Document {
   phone: string;
   role: "attendee" | "organizer" | "admin";
   isVerified: boolean;
+  otpCode?: string;
+  otpExpiresAt?: Date;
   avatar?: string;
   savedEvents: mongoose.Types.ObjectId[];
   organizerProfile?: {
@@ -36,6 +38,8 @@ const UserSchema = new Schema<IUser>(
       default: "attendee",
     },
     isVerified: { type: Boolean, default: false },
+    otpCode: { type: String, select: false },
+    otpExpiresAt: { type: Date, select: false },
     avatar: { type: String },
     savedEvents: [{ type: Schema.Types.ObjectId, ref: "Event" }],
     organizerProfile: {

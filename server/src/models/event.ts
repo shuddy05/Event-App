@@ -19,6 +19,7 @@ export interface IEvent extends Document {
     | "cancelled"
     | "postponed";
   capacity?: number;
+  reservedCount: number;
   refundPolicy: string;
   slug: string;
   isPromoted: boolean;
@@ -49,6 +50,7 @@ const EventSchema = new Schema<IEvent>(
       default: "draft",
     },
     capacity: { type: Number },
+    reservedCount: { type: Number, default: 0 },
     refundPolicy: { type: String, required: true },
     slug: { type: String, required: true, trim: true, lowercase: true },
     isPromoted: { type: Boolean, default: false },
