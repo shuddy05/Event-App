@@ -7,22 +7,24 @@ This document defines the coding standards for the server directory.All collabor
 ## 1. Project Structure
 
     ```
+
 server/
 ├── src/
-│   ├── config/        # Configuration files (database, env, session, etc.)
-│   ├── controllers/   # Request handlers (one file per resource)
-│   ├── email/         # Email service & templates
-│   ├── jobs/          # Cron/scheduled jobs
-│   ├── lib/           # Shared utilities, helpers, validation schemas
-│   ├── middlewares/    # Express middleware (auth, cache, rate-limit, error)
-│   ├── models/         # Mongoose models (one file per model)
-│   ├── routes/        # Express routers (one file per resource)
-│   └── services/      # Business logic (complex/shared)
-│   └── index.ts       # App entry point (Express setup & server start)
+│ ├── config/ # Configuration files (database, env, session, etc.)
+│ ├── controllers/ # Request handlers (one file per resource)
+│ ├── email/ # Email service & templates
+│ ├── jobs/ # Cron/scheduled jobs
+│ ├── lib/ # Shared utilities, helpers, validation schemas
+│ ├── middlewares/ # Express middleware (auth, cache, rate-limit, error)
+│ ├── models/ # Mongoose models (one file per model)
+│ ├── routes/ # Express routers (one file per resource)
+│ └── services/ # Business logic (complex/shared)
+│ └── index.ts # App entry point (Express setup & server start)
 ├── api/
-│   └── index.ts       # Serverless entry point (re-exports app from src/index.ts)
-├── dist/              # Compiled output
-```
+│ └── index.ts # Serverless entry point (re-exports app from src/index.ts)
+├── dist/ # Compiled output
+
+````
 
     - Keep one file per logical unit(one model, one controller, one route file per resource).
 - Place only the designated file types in each folder — no exceptions.
@@ -63,11 +65,12 @@ const {ModelName} =
   mongoose.model<I{ModelName}>("{ModelName}", {ModelName}Schema, "{collectionName}");
 
 export default {ModelName};
-```
+````
 
 ### Rules
 
     - ** Export ** an interface(`I{Name}`) extending `Document` and the model as **default export**.
+
 - Use ** camelCase ** for field names.
 - ObjectId references must use `Schema.Types.ObjectId` with `ref: "{ReferencedModel}"`.
 - String enums should be defined as ** inline union types ** in both the interface and schema`enum`.
@@ -86,11 +89,13 @@ export default {ModelName};
 ### Import pattern
 
     ```typescript
+
 import { Request, Response, NextFunction } from 'express'
 import { ModelName } from '../models/{modelName}.js'
 import tryCatchWrapper from '../lib/tryCatchWrapper.js'
 import { sendTsRestError, sendTsRestSuccess } from '../lib/responseHandler.js'
-```
+
+````
 
 ### Export rules
 
@@ -111,14 +116,16 @@ export const doSomething = tryCatchWrapper(async (req: Request, res: Response) =
     body: data,
   })
 })
-```
+````
 
     ** Controller that uses`next` **:
 
 ```typescript
-export const doSomething = tryCatchWrapper(async (req: Request, res: Response, _next: NextFunction) => {
-  // use _next if you need to pass errors manually
-})
+export const doSomething = tryCatchWrapper(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    // use _next if you need to pass errors manually
+  },
+);
 ```
 
 ### Response conventions
@@ -132,8 +139,9 @@ export const doSomething = tryCatchWrapper(async (req: Request, res: Response, _
 ### Controller logic rules
 
     - Use`.lean()` for all read - only database queries.
+
 - Use`req.session.userId` to get the current authenticated user's ID.
-    - Use`req.session.role` for role - checking in controllers.
+  - Use`req.session.role` for role - checking in controllers.
 - Extract pagination with: `const page = Number(req.query.page) || 1; const limit = Number(req.query.limit) || 10;`.
 - Use`req.params` for route parameters, `req.query` for query strings, `req.body` for request body.
 - Use`Promise.all()` for parallel independent database queries.
@@ -150,6 +158,7 @@ export const doSomething = tryCatchWrapper(async (req: Request, res: Response, _
 ### Structure
 
     ```typescript
+
 import { Router } from 'express'
 // imports...
 
@@ -158,7 +167,8 @@ const router = Router()
 // Routes go here...
 
 export default router
-```
+
+````
 
 ### Rules
 
@@ -178,11 +188,12 @@ router.post(
   clearCache('pattern'), // 4. Cache invalidation (for mutations)
   controllerFunction // 5. Controller
 )
-```
+````
 
 ### Available middleware
 
     - ** Rate limiting **: `strictLimiter`(sensitive routes), `customRateLimiter(n, windowMin)`(custom), `globalLimiter`(default ).
+
 - ** Auth **: `verifySession`(logged -in users), `requireAdmin`(admin only), `requireRole(...)`(specific roles).
 - ** Validation **: `validateFormData(zodSchema)` — validates `req.body` against the schema.
 - ** Caching **: `cacheMiddleware("key")`(cache GET responses), `clearCache("pattern")`(clear after mutations).
@@ -198,6 +209,7 @@ router.post(
 ### Rules
 
     - Extract reusable middleware logic into this directory.
+
 - Auth middleware functions must use `sendTsRestError()` for unauthorized responses.
 - The error middleware(`error.middleware.ts`) uses a custom `ErrorResponse` class with `statusCode`.
 - The`formValidate.ts` middleware uses Zod schemas — if validation fails, return 400 with `{ success: false, message: "Validation failed", details: [...] }`.
@@ -207,6 +219,7 @@ router.post(
 ## 6. Config(`src/config/`)
 
     - One file per external dependency / config concern(e.g., `database.ts`, `session.ts`, `paystack.ts`, `email.ts`).
+
 - `keys.ts` is the central env var manager with validation — all environment variables are read through `env` exported from here.
 - Use lazy initialization for API clients(e.g., `getPaystack()` returns a singleton axios instance).
 
@@ -215,6 +228,7 @@ router.post(
 ## 7. Lib(`src/lib/`)
 
     - Contains shared utilities: `tryCatchWrapper.ts`, `responseHandler.ts`, `schemaValidation.ts`, `utils.ts`.
+
 - Do NOT place files here that belong in `config/`, `services/`, or`middleware/`.
 
 ### tryCatchWrapper(`src/lib/tryCatchWrapper.ts`)
@@ -224,12 +238,14 @@ Already in use — all async controller functions must be wrapped with it.Do not
 ### Response Handler(`src/lib/responseHandler.ts`)
 
     - `sendTsRestSuccess(res, status, body)` — sends a success JSON response.
+
 - `sendTsRestError(res, status, message, details?)` — sends an error JSON response with `{ success: false, message }`.
 - Do NOT bypass these helpers; they ensure consistent response formatting.
 
 ### Schema Validation(`src/lib/schemaValidation.ts`)
 
     - All Zod schemas defined here.
+
 - Schema names should match the resource: `{resource}Schema`(e.g., `registerSchema`, `carSchema`, `bookingSchema`).
 
 ---
@@ -237,6 +253,7 @@ Already in use — all async controller functions must be wrapped with it.Do not
 ## 8. Services(`src/services/`)
 
     - Complex business logic that spans multiple models or is reused across controllers.
+
 - Use class-based structure exported as a singleton instance:
 
 ```typescript
@@ -253,6 +270,7 @@ export const {name}Service = new {Name}Service();
 ## 9. Email(`src/email/`)
 
     - Email service functions in `send-email.ts` — all email sending logic.
+
 - HTML templates in `templates.ts`.
 - Email functions should return `{ success: boolean, queued: boolean }`.
 - Failed emails should be queued in the`FailedEmail` model for retry via cron job.
@@ -262,6 +280,7 @@ export const {name}Service = new {Name}Service();
 ## 10. Jobs(`src/jobs/`)
 
     - Each job file exports `start{JobName}()` and optionally `stop{JobName}()` functions.
+
 - Jobs are started in `src/index.ts` inside`startServer()`.
 
 ---
@@ -271,6 +290,7 @@ export const {name}Service = new {Name}Service();
 ### Structure
 
     - Augment Express types globally at the top.
+
 - Middleware ordering(CRITICAL): CORS → Rate limiter → Session → Body parsers → Request time → Routes → 404 → Error handler.
 - API routes registered under`/api/v1/{resource}`.
 - Separate function for server startup(`startServer()`).
@@ -279,6 +299,7 @@ export const {name}Service = new {Name}Service();
 ### Import style
 
     - Local imports must include `.js` extension(ESM requirement).
+
 - Named exports preferred for all modules except routers(default export ).
 
 ---
@@ -288,6 +309,7 @@ export const {name}Service = new {Name}Service();
 ### TypeScript
 
     - Use ** strict mode ** (`"strict": true` in tsconfig).
+
 - Target: `ES2022`, Module: `NodeNext`, ModuleResolution: `NodeNext`.
 - Use explicit types for all function parameters and return types.
 - Use`interface` over `type` for object shapes, especially`extends Document`.
@@ -295,12 +317,14 @@ export const {name}Service = new {Name}Service();
 ### Imports
 
     - Always use `.js` extension for local imports(e.g., `../model/user.js`).
+
 - Prefer named imports over default imports for non - Router modules.
 - Group imports: 3rd party → local.
 
 ### Error handling
 
     - All errors from async controllers are caught by `tryCatchWrapper` and forwarded to the global error handler.
+
 - The global error handler(`appErrorHandler`) handles Mongoose`CastError`, duplicate key(code 11000), and`ValidationError`.
 - Use`throw` for errors you want the global handler to process(when not using`sendTsRestError`).
 
@@ -309,21 +333,23 @@ export const {name}Service = new {Name}Service();
 Define augmented types in the file where they're primarily used:
 
     - `Express.Request` extensions — in `src/index.ts` and`src/middleware/auth.middleware.ts`.
+
 - `express-session.SessionData` — in `src/index.ts`.
 
 ### File convention summary
 
     | Directory | File Pattern | Export Style |
+
 | ------------ | -------------------------- | ---------------------------------------- |
-| models /       | `{model}.ts` | `export default Model` |
+| models / | `{model}.ts` | `export default Model` |
 | controllers / | `{resource}.controller.ts` | Named exports only |
-| routes /      | `{resource}.routes.ts` | `export default router` |
-| middlewares /  | `{feature}.middleware.ts` | Named exports |
-| config /      | `{feature}.ts` | Named exports(and default if singleton) |
-| lib /         | `{feature}.ts` | Named exports or default                 |
-| services /    | `{resource}.service.ts` | Class + singleton instance |
-| email /       | `{feature}.ts` | Named + default (service object)         |
-| jobs /        | `{jobName}.ts` | Named exports |
+| routes / | `{resource}.routes.ts` | `export default router` |
+| middlewares / | `{feature}.middleware.ts` | Named exports |
+| config / | `{feature}.ts` | Named exports(and default if singleton) |
+| lib / | `{feature}.ts` | Named exports or default |
+| services / | `{resource}.service.ts` | Class + singleton instance |
+| email / | `{feature}.ts` | Named + default (service object) |
+| jobs / | `{jobName}.ts` | Named exports |
 
     ---
 
