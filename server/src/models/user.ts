@@ -5,7 +5,6 @@ export interface IUser extends Document {
   fullname: string;
   email: string;
   password: string;
-  phone: string;
   role: "attendee" | "organizer" | "admin";
   isVerified: boolean;
   otpCode?: string;
@@ -13,6 +12,7 @@ export interface IUser extends Document {
   avatar?: string;
   savedEvents: mongoose.Types.ObjectId[];
   organizerProfile?: {
+    companyName?: string;
     bankAccountNumber?: string;
     bankName?: string;
     bankAccountName?: string;
@@ -31,7 +31,6 @@ const UserSchema = new Schema<IUser>(
       trim: true,
     },
     password: { type: String, required: true, select: false },
-    phone: { type: String, required: true, trim: true },
     role: {
       type: String,
       enum: ["attendee", "organizer", "admin"],
@@ -43,6 +42,7 @@ const UserSchema = new Schema<IUser>(
     avatar: { type: String },
     savedEvents: [{ type: Schema.Types.ObjectId, ref: "Event" }],
     organizerProfile: {
+      companyName: { type: String, trim: true },
       bankAccountNumber: { type: String },
       bankName: { type: String },
       bankAccountName: { type: String },
@@ -61,7 +61,6 @@ const UserSchema = new Schema<IUser>(
 );
 
 // Indexes go after schema definition
-UserSchema.index({ email: 1 });
 UserSchema.index({ role: 1 });
 
 // Export pattern — use existing model or create new one
