@@ -6,6 +6,7 @@ import logger, { logError } from './config/logger.js'
 import createSessionMiddleware from './config/session.js'
 import { globalLimiter } from './middlewares/rateLimit.middleware.js'
 import emailRoutes from "../src/routes/email.routes.js"
+import authRoutes from './routes/auth.routes.js'
 
 import {
   appErrorHandler,
@@ -38,15 +39,14 @@ declare module 'express-session' {
 }
 
 const app = express()
-app.use('/api', emailRoutes)
 
 setupGlobalErrorHandlers()
 
 // CORS configuration
 const allowedOrigins = [env.CLIENT_URL]
-if (env.NODE_ENV === 'production' && env.CLIENT_URL) {
-  allowedOrigins.push(env.CLIENT_URL)
-}
+// if (env.NODE_ENV === 'production' && env.CLIENT_URL) {
+//   allowedOrigins.push(env.CLIENT_URL)
+// }
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
@@ -63,22 +63,25 @@ const corsOptions: cors.CorsOptions = {
   exposedHeaders: ['Content-Range', 'X-Content-Range', 'x-refresh-token', 'set-cookie'],
 }
 
-app.use(createExpressLogger())//pino http logger middleware for request logging
-// Use session middleware before defining routes
-app.use(createSessionMiddleware())
 
-app.set('trust-proxy', 1)
+app.set('trust proxy', 1)
+// Cors
 app.use(cors(corsOptions))
 app.use(globalLimiter) // Apply rate limiting to all requests
+// Use session middleware before defining routes
+
 app.use(createSessionMiddleware())
+
 app.use(express.json({ limit: '25mb' }))
 app.use(express.urlencoded({ extended: true, limit: '25mb' }))
 app.disable('x-powered-by')
 
+// Request Time
 app.use((req: Request, res: Response, next: NextFunction) => {
   req.requestTime = new Date().toISOString()
   next()
 })
+app.use(createExpressLogger())//pino http logger middleware for request logging
 
 app.use('/health', (req: Request, res: Response, next: NextFunction) => {
   res.status(200).json({
@@ -90,7 +93,9 @@ app.use('/health', (req: Request, res: Response, next: NextFunction) => {
   })
 })
 
-
+// Routes
+app.use('/api/v1/auth', authRoutes)
+app.use('/api', emailRoutes)
 
 
 

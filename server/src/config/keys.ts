@@ -23,6 +23,7 @@ const ENV_VARS: EnvSpec[] = [
   { key: 'MEMCACHIER_USERNAME', required: true },
   { key: 'MEMCACHIER_PASSWORD', required: true },
   { key: 'BREVO_API_KEY', required: true },
+   { key: 'EMAIL_OWNER', required: true }
 ]
 
 interface Env {
