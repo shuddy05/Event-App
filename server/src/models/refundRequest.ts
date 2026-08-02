@@ -2,9 +2,9 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IRefundRequest extends Document {
   _id: mongoose.Types.ObjectId;
-  orderId: mongoose.Types.ObjectId;
-  ticketId?: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
+  order: mongoose.Types.ObjectId;
+  ticket?: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId;
   reason: string;
   status: "pending" | "approved" | "rejected" | "processed";
   amount: number;
@@ -12,11 +12,11 @@ export interface IRefundRequest extends Document {
 
 const RefundRequestSchema = new Schema<IRefundRequest>(
   {
-    orderId: { type: Schema.Types.ObjectId, ref: "Order", required: true },
+    order: { type: Schema.Types.ObjectId, ref: "Order", required: true },
     // Optional: only set if refunding a single ticket out of a multi-ticket
     // order becomes a requirement later. Not used in this MVP.
-    ticketId: { type: Schema.Types.ObjectId, ref: "Ticket" },
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    ticket: { type: Schema.Types.ObjectId, ref: "Ticket" },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     reason: { type: String, required: true },
     status: {
       type: String,

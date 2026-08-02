@@ -2,10 +2,10 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface ITicket extends Document {
   _id: mongoose.Types.ObjectId;
-  eventId: mongoose.Types.ObjectId;
-  ticketTypeId?: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
-  orderId?: mongoose.Types.ObjectId;
+  event: mongoose.Types.ObjectId;
+  ticketType?: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId;
+  order?: mongoose.Types.ObjectId;
   qrCode: string;
   status: "valid" | "checked_in" | "cancelled" | "refunded";
   checkedInAt?: Date;
@@ -13,10 +13,10 @@ export interface ITicket extends Document {
 
 const TicketSchema = new Schema<ITicket>(
   {
-    eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
-    ticketTypeId: { type: Schema.Types.ObjectId, ref: "TicketType" },
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    orderId: { type: Schema.Types.ObjectId, ref: "Order" },
+    event: { type: Schema.Types.ObjectId, ref: "Event", required: true },
+    ticketType: { type: Schema.Types.ObjectId, ref: "TicketType" },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    order: { type: Schema.Types.ObjectId, ref: "Order" },
     qrCode: { type: String, required: true },
     status: {
       type: String,

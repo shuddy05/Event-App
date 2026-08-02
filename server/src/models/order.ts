@@ -1,15 +1,15 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IOrderItem {
-  ticketTypeId: mongoose.Types.ObjectId;
+  ticketType: mongoose.Types.ObjectId;
   quantity: number;
   unitPrice: number;
 }
 
 export interface IOrder extends Document {
   _id: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
-  eventId: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId;
+  event: mongoose.Types.ObjectId;
   items: IOrderItem[];
   totalAmount: number;
   commissionAmount: number;
@@ -20,8 +20,8 @@ export interface IOrder extends Document {
 
 const OrderSchema = new Schema<IOrder>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    event: { type: Schema.Types.ObjectId, ref: "Event", required: true },
     items: [
       {
         ticketTypeId: {

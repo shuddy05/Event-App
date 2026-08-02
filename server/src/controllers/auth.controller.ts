@@ -14,7 +14,7 @@ export const register = tryCatchWrapper(async (req: Request, res: Response) => {
 
   const user = await authService.createUser({
     fullname,
-    email,
+    email: email.toLowerCase(),
     password,
     phone,
     role,

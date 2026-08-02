@@ -2,8 +2,8 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IPayout extends Document {
   _id: mongoose.Types.ObjectId;
-  organizerId: mongoose.Types.ObjectId;
-  eventId: mongoose.Types.ObjectId;
+  organizer: mongoose.Types.ObjectId;
+  event: mongoose.Types.ObjectId;
   amount: number;
   status: "pending" | "processing" | "paid" | "failed";
   scheduledDate: Date;
@@ -12,8 +12,8 @@ export interface IPayout extends Document {
 
 const PayoutSchema = new Schema<IPayout>(
   {
-    organizerId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
+    organizer: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    event: { type: Schema.Types.ObjectId, ref: "Event", required: true },
     amount: { type: Number, required: true, min: 0 },
     status: {
       type: String,
